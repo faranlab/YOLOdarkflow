@@ -1,21 +1,27 @@
 import os
 import uuid
 import cv2
+from lxml import etree
+import xml.etree.cElementTree as ET
+
 
 ANOPATH='/home/fm/Desktop/Dataset/Video_Annotation/'
 VIDPATH='/home/fm/Desktop/Dataset/Videos/'
-IMDIR = '/home/fm/Desktop/darkflow-master/newmodeldata/images/'
+IMDIR = '/home/faran/darkflow-master/newmodeldata/images/'
 ANOSAVEDIR = '/home/fm/Desktop/darkflow-master/newmodeldata/annotations/'
 dirs=os.listdir(ANOPATH)
 
 def main():
     for filename in dirs:
+        filename = 'Clip_1_gt.txt'
+        print(filename)
         farzaframes={}
         label='uav'
         if '.txt' not in filename:
             continue
 
-        with open(foldername + filename) as file:
+        rawname = filename.replace("_gt.txt", "")
+        with open(ANOPATH + filename) as file:
             lines=file.readlines()
 
         key = 1
@@ -34,16 +40,20 @@ def main():
                     xy[j]=int(xy[j])
                 [y1, x1, y2, x2]=xy
                 farzaframes[key].append(tuple([label, x1, y1, x2, y2]))
-            key = key + 1
-        write_xml(farzaframes)
-def write_xml(farzaframes):
+            write_xml(farzaframes,key)
+        quit()
+        vid = cv2.VideoCapture(VIDPATH + rawname + '.mov')
+        while(True)
+            ret, frame = vid.read()
+            cv2.imwrite()
+def write_xml(farzaframes,key):
     if not os.path.isdir(ANOSAVEDIR):
         os.mkdir(ANOSAVEDIR)
 
     uavcnt = len(farzaframes[key])
     data_point_name = str(uuid.uuid4())
-    image = cv2.imread(img.path)
-    height, width, depth = image.shape
+    data_point_name = data_point_name.replace("-","")
+    height, width, depth = 1080,1920,3
 
     annotation = ET.Element('annotation')
     ET.SubElement(annotation, 'folder').text = IMDIR
@@ -53,7 +63,7 @@ def write_xml(farzaframes):
     ET.SubElement(size, 'width').text = str(width)
     ET.SubElement(size, 'height').text = str(height)
     ET.SubElement(size, 'depth').text = str(depth)
-    for x in range(0,uavcnt)
+    for x in range(0,uavcnt):
         ob = ET.SubElement(annotation, 'object')
         ET.SubElement(ob, 'name').text = 'uav'
         ET.SubElement(ob, 'pose').text = 'Unspecified'
@@ -64,10 +74,13 @@ def write_xml(farzaframes):
         ET.SubElement(bbox, 'ymin').text = str(farzaframes[key][x][2])
         ET.SubElement(bbox, 'xmax').text = str(farzaframes[key][x][3])
         ET.SubElement(bbox, 'ymax').text = str(farzaframes[key][x][4])
-
+    rere = data_point_name + 'jpg'
     xml_str = ET.tostring(annotation)
     root = etree.fromstring(xml_str)
     xml_str = etree.tostring(root, pretty_print=True)
-    save_path = os.path.join(ANOSAVEDIR, img.name.replace('jpg', 'xml'))
+    save_path = os.path.join(ANOSAVEDIR, data_point_name.replace('jpg', 'xml'))
     with open(save_path, 'wb') as temp_xml:
         temp_xml.write(xml_str)
+
+if __name__ == '__main__':
+    main()
